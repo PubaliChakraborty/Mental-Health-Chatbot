@@ -8,3 +8,8 @@ deep-translator==1.11.4
 langdetect==1.0.9
 aiofiles>=23.2.1
 Jinja2>=3.1.2
+httpx==0.26.0
+markdown==3.5.1
+pydantic==1.10.7
+typing-extensions==4.5.0
+starlette==0.14.2  # ASGI framework
