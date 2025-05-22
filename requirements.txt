@@ -1,16 +1,16 @@
-fastapi==0.95.2
-uvicorn==0.22.0
-python-multipart==0.0.5
-requests==2.28.2  # Removed duplicate entry, kept newer version
-Pillow==9.5.0
-python-dotenv==0.21.1
-deep-translator==1.11.4
-langdetect==1.0.9
-aiofiles==23.2.1
-Jinja2==3.0.3
-httpx==0.26.0
-markdown==3.5.1
-pydantic==1.10.7
-typing-extensions==4.5.0
-starlette==0.26.1
-markupsafe==2.0.1
+fastapi
+uvicorn
+python-multipart
+requests  # Removed duplicate entry, kept newer version
+Pillow
+python-dotenv
+deep-translator
+langdetect
+aiofiles
+Jinja2
+httpx
+markdown
+pydantic
+typing-extensions
+starlette
+markupsafe
