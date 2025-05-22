@@ -1,0 +1,35 @@
+{
+    "crisis": {
+        "hotline": "988",
+        "text_line": "Text HOME to 741741",
+        "international": "https://www.befrienders.org",
+        "warning_signs": [
+            "Talking about wanting to die",
+            "Looking for ways to self-harm",
+            "Feeling hopeless or trapped",
+            "Extreme mood swings"
+        ],
+        "warning_signs_hi": [
+            "मरने की इच्छा के बारे में बात करना",
+            "स्वयं को नुकसान पहुँचाने के तरीके ढूँढना",
+            "निराश या फँसा हुआ महसूस करना",
+            "अत्यधिक मनोदशा में परिवर्तन"
+        ]
+    },
+    "general": {
+        "therapists": "https://www.psychologytoday.com",
+        "support_groups": "https://www.nami.org/Support-Education",
+        "self_help": [
+            "Mindfulness exercises",
+            "Breathing techniques",
+            "Journaling prompts",
+            "Sleep hygiene tips"
+        ],
+        "self_help_hi": [
+            "माइंडफुलनेस एक्सरसाइज",
+            "श्वास तकनीक",
+            "जर्नलिंग प्रॉम्प्ट्स",
+            "नींद स्वच्छता युक्तियाँ"
+        ]
+    }
+}

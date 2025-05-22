@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/YOUR_KIT.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .prompt-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(124, 58, 237, 0.3); }
+        .disclaimer { background: rgba(239, 68, 68, 0.1); border-left: 4px solid rgba(239, 68, 68, 0.8); }
+        .language-btn.active { background-color: rgba(124, 58, 237, 0.5); color: white; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-gray-300 font-sans">
+    <div class="container mx-auto p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-center mb-8 relative">
+            <i class="fas fa-brain text-5xl text-purple-400 mr-4"></i>
+            <div>
+                <h1 class="text-4xl font-bold text-purple-300" id="app-title">Mental Health Assistant</h1>
+                <p class="text-center text-purple-200 mt-2" id="app-subtitle">AI-powered mental health support</p>
+            </div>
+            <div class="absolute right-0 flex space-x-2">
+                <button id="language-en" class="language-btn active px-3 py-1 rounded-md text-sm">English</button>
+                <button id="language-hi" class="language-btn px-3 py-1 rounded-md text-sm">हिंदी</button>
+            </div>
+        </div>
+        
+        <!-- Disclaimer -->
+        <div class="disclaimer p-4 rounded-lg mb-8">
+            <p class="font-semibold text-red-400"><i class="fas fa-exclamation-triangle mr-2"></i><span id="disclaimer-title">Important Disclaimer</span></p>
+            <p id="disclaimer-text">This tool offers AI-generated suggestions. Image analysis is optional. In crisis, contact professionals immediately.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Optional Image Upload -->
+            <div class="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg border border-white/20">
+                <h2 class="text-xl font-semibold text-purple-400 mb-4"><i class="fas fa-image mr-2"></i><span id="upload-title">Optional Image Upload</span></h2>
+                <button id="upload-btn" class="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-md mb-4">
+                    <i class="fas fa-upload mr-2"></i><span id="upload-btn-text">Select Image (Optional)</span>
+                </button>
+                <input type="file" id="image-upload" accept="image/*" class="hidden">
+                <div id="image-container" class="hidden mt-4">
+                    <img id="display-image" src="" alt="Uploaded image" class="w-full rounded-lg shadow-lg max-h-80 object-contain">
+                    <button id="remove-image" class="mt-2 w-full py-2 bg-red-500/50 hover:bg-red-600/50 text-white rounded-md">
+                        <i class="fas fa-times mr-2"></i><span id="remove-image-text">Remove Image</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Question Input -->
+            <div class="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg border border-white/20">
+                <h2 class="text-xl font-semibold text-blue-400 mb-4"><i class="fas fa-comment-medical mr-2"></i><span id="prompt-title">Your Question</span></h2>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-blue-300 mb-2" id="quick-prompts-label">Quick Prompts:</label>
+                    <div id="prompt-buttons" class="grid grid-cols-2 gap-2 mb-3"></div>
+                </div>
+                <textarea id="query-input" rows="4" class="w-full p-3 bg-gray-800 rounded-lg shadow mb-3" 
+                    placeholder="Example: How to manage anxiety?"></textarea>
+                <button id="submit-query" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg">
+                    <i class="fas fa-brain mr-2"></i><span id="submit-btn-text">Get Support</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg border border-white/20 mb-8">
+            <h2 class="text-xl font-semibold text-green-400"><i class="fas fa-robot mr-2"></i><span id="analysis-title">Analysis</span></h2>
+            <div id="response-type" class="text-sm text-green-300 mb-2"></div>
+            <div id="response-container" class="hidden mt-4 bg-gray-800 p-4 rounded prose prose-invert max-w-none"></div>
+        </div>
+
+        <!-- Resources -->
+        <div id="resources-container" class="hidden bg-blue-900/30 p-6 rounded-xl shadow-lg border border-blue-400/20 mb-8">
+            <h2 class="text-xl font-semibold text-blue-300 mb-3"><i class="fas fa-hands-helping mr-2"></i><span id="resources-title">Resources</span></h2>
+            <div id="crisis-resources" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-container" class="hidden mt-8 p-4 bg-red-500/90 text-white rounded-lg shadow">
+            <p id="error-text" class="flex items-center"><i class="fas fa-exclamation-circle mr-2"></i><span></span></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const elements = {
+                uploadBtn: document.getElementById('upload-btn'),
+                imageUpload: document.getElementById('image-upload'),
+                displayImage: document.getElementById('display-image'),
+                imageContainer: document.getElementById('image-container'),
+                removeImageBtn: document.getElementById('remove-image'),
+                queryInput: document.getElementById('query-input'),
+                submitQuery: document.getElementById('submit-query'),
+                responseContainer: document.getElementById('response-container'),
+                responseType: document.getElementById('response-type'),
+                errorContainer: document.getElementById('error-container'),
+                errorText: document.getElementById('error-text'),
+                promptButtons: document.getElementById('prompt-buttons'),
+                resourcesContainer: document.getElementById('resources-container'),
+                crisisResources: document.getElementById('crisis-resources'),
+                languageEnBtn: document.getElementById('language-en'),
+                languageHiBtn: document.getElementById('language-hi')
+            };
+
+            // UI Translations
+            const translations = {
+                'app-title': {'en': 'Mental Health Assistant', 'hi': 'मानसिक स्वास्थ्य सहायक'},
+                'app-subtitle': {'en': 'AI-powered mental health support', 'hi': 'AI-सहायता प्राप्त मानसिक स्वास्थ्य सहायता'},
+                'disclaimer-title': {'en': 'Important Disclaimer', 'hi': 'महत्वपूर्ण अस्वीकरण'},
+                'disclaimer-text': {'en': 'This tool offers AI-generated suggestions. Image analysis is optional. In crisis, contact professionals immediately.', 'hi': 'यह उपकरण AI-जनित सुझाव देता है। छवि विश्लेषण वैकल्पिक है। संकट में तुरंत पेशेवरों से संपर्क करें।'},
+                'upload-title': {'en': 'Optional Image Upload', 'hi': 'वैकल्पिक छवि अपलोड'},
+                'upload-btn-text': {'en': 'Select Image (Optional)', 'hi': 'छवि चुनें (वैकल्पिक)'},
+                'remove-image-text': {'en': 'Remove Image', 'hi': 'छवि हटाएं'},
+                'prompt-title': {'en': 'Your Question', 'hi': 'आपका प्रश्न'},
+                'quick-prompts-label': {'en': 'Quick Prompts:', 'hi': 'त्वरित प्रॉम्प्ट:'},
+                'analysis-title': {'en': 'Analysis', 'hi': 'विश्लेषण'},
+                'resources-title': {'en': 'Resources', 'hi': 'संसाधन'},
+                'submit-btn-text': {'en': 'Get Support', 'hi': 'सहायता प्राप्त करें'},
+                'placeholder': {'en': 'Example: How to manage anxiety?', 'hi': 'उदाहरण: चिंता कैसे प्रबंधित करें?'},
+                'text-analysis': {'en': 'Text Analysis', 'hi': 'पाठ विश्लेषण'},
+                'image-analysis': {'en': 'Image Analysis', 'hi': 'छवि विश्लेषण'},
+                'no-query-error': {'en': 'Please enter a question', 'hi': 'कृपया एक प्रश्न दर्ज करें'}
+            };
+
+            let currentLanguage = 'en';
+
+            // Update UI translations
+            function updateTranslations() {
+                for (const [id, texts] of Object.entries(translations)) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = texts[currentLanguage];
+                    } else if (id === 'placeholder') {
+                        elements.queryInput.placeholder = texts[currentLanguage];
+                    }
+                }
+            }
+
+            // Load prompts for current language
+            function loadPrompts() {
+                fetch(`/prompts?lang=${currentLanguage}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        elements.promptButtons.innerHTML = '';
+                        data.prompts.forEach(prompt => {
+                            const button = document.createElement('button');
+                            button.className = 'prompt-btn text-xs p-2 bg-purple-500/20 hover:bg-purple-500/40 text-purple-200 rounded-md';
+                            button.textContent = prompt;
+                            button.addEventListener('click', () => {
+                                elements.queryInput.value = prompt;
+                            });
+                            elements.promptButtons.appendChild(button);
+                        });
+                    });
+            }
+
+            // Language toggle
+            elements.languageEnBtn.addEventListener('click', () => {
+                currentLanguage = 'en';
+                elements.languageEnBtn.classList.add('active');
+                elements.languageHiBtn.classList.remove('active');
+                updateTranslations();
+                loadPrompts();
+            });
+
+            elements.languageHiBtn.addEventListener('click', () => {
+                currentLanguage = 'hi';
+                elements.languageHiBtn.classList.add('active');
+                elements.languageEnBtn.classList.remove('active');
+                updateTranslations();
+                loadPrompts();
+            });
+
+            // Image handling
+            elements.uploadBtn.addEventListener('click', () => elements.imageUpload.click());
+            elements.imageUpload.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file?.type.match('image.*')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        elements.displayImage.src = e.target.result;
+                        elements.imageContainer.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            elements.removeImageBtn.addEventListener('click', () => {
+                elements.imageUpload.value = '';
+                elements.imageContainer.classList.add('hidden');
+            });
+
+            // Submit query
+            elements.submitQuery.addEventListener('click', async () => {
+                const query = elements.queryInput.value.trim();
+                if (!query) {
+                    showError(translations['no-query-error'][currentLanguage]);
+                    return;
+                }
+
+                const formData = new FormData();
+                if (elements.imageUpload.files[0]) {
+                    formData.append('image', elements.imageUpload.files[0]);
+                }
+                formData.append('query', query);
+
+                try {
+                    setLoading(true);
+                    const response = await fetch('/upload_and_query', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok) throw new Error(result.detail || 'Analysis failed');
+
+                    // Display results
+                    elements.responseContainer.innerHTML = marked.parse(result.analysis);
+                    elements.responseContainer.classList.remove('hidden');
+                    elements.responseType.textContent = result.has_image 
+                        ? translations['image-analysis'][currentLanguage] 
+                        : translations['text-analysis'][currentLanguage];
+                    elements.responseType.classList.remove('hidden');
+                    
+                    // Display resources
+                    elements.crisisResources.innerHTML = `
+                        <div class="bg-blue-800/30 p-3 rounded-lg">
+                            <h3 class="font-bold text-blue-200"><i class="fas fa-phone-alt mr-2"></i>${currentLanguage === 'hi' ? 'संकट हॉटलाइन' : 'Crisis Hotline'}</h3>
+                            <p class="text-xl font-mono">${result.crisis_resources.hotline}</p>
+                        </div>
+                        <div class="bg-blue-800/30 p-3 rounded-lg">
+                            <h3 class="font-bold text-blue-200"><i class="fas fa-sms mr-2"></i>${currentLanguage === 'hi' ? 'टेक्स्ट सहायता' : 'Text Support'}</h3>
+                            <p>${result.crisis_resources.text}</p>
+                        </div>
+                        <div class="bg-blue-800/30 p-3 rounded-lg">
+                            <h3 class="font-bold text-blue-200"><i class="fas fa-globe mr-2"></i>${currentLanguage === 'hi' ? 'अंतर्राष्ट्रीय सहायता' : 'International Help'}</h3>
+                            <a href="${result.crisis_resources.international}" class="text-blue-300 hover:underline">${currentLanguage === 'hi' ? 'संसाधन खोजें' : 'Find resources'}</a>
+                        </div>
+                    `;
+                    elements.resourcesContainer.classList.remove('hidden');
+                    elements.errorContainer.classList.add('hidden');
+                } catch (error) {
+                    showError(error.message);
+                } finally {
+                    setLoading(false);
+                }
+            });
+
+            function setLoading(isLoading) {
+                elements.submitQuery.disabled = isLoading;
+                elements.submitQuery.innerHTML = isLoading
+                    ? `<i class="fas fa-spinner fa-spin mr-2"></i>${currentLanguage === 'hi' ? 'विश्लेषण हो रहा है' : 'Analyzing...'}`
+                    : `<i class="fas fa-brain mr-2"></i>${translations['submit-btn-text'][currentLanguage]}`;
+            }
+
+            function showError(message) {
+                elements.errorText.querySelector('span').textContent = message;
+                elements.errorContainer.classList.remove('hidden');
+                elements.resourcesContainer.classList.add('hidden');
+            }
+
+            // Initialize
+            updateTranslations();
+            loadPrompts();
+        });
+    </script>
+</body>
+</html>
